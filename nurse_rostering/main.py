@@ -35,6 +35,9 @@ class Problem:
         self.staff: list[Staff] = []
         self.shift_types: list[ShiftType] = []
 
+        self.staff_dict: dict[str, int] = {}
+        self.shift_dict: dict[str, int] = {}
+
 # Exemple basé sur l'instance 1
 problem: Problem = Problem(14)
 problem.shift_types.append(ShiftType(480))
