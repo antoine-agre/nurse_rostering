@@ -6,12 +6,19 @@ class Staff:
                  min_consecutive_rest_days: int, max_worked_weekends: int):
         
         self.id: str = id
+        # Jours où l'employé ne travaille pas
         self.rest_days: list[int] = []
+        # Minimum de minutes travaillées
         self.min_worktime: int = min_worktime
+        # Maximum de minutes travaillées
         self.max_worktime: int = max_worktime
+        # Minimum de jours de travail consécutifs
         self.min_consecutive_shifts: int = min_consecutive_shifts
+        # Maximum de jours de travail consécutifs
         self.max_consecutive_shifts: int = max_consecutive_shifts
+        # Minimum de jours de repos consécutifs
         self.min_consecutive_rest_days: int = min_consecutive_rest_days
+        # Maximum de weekends travaillés
         self.max_worked_weekends: int = max_worked_weekends
         # Pour chaque poste, le nombre de jour maximum où cet employé peut y être assigné
         self.max_shift_days: list[int] = []

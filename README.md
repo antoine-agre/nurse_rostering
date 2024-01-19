@@ -12,6 +12,21 @@ Notre solution est basée sur l'article de *Rahimian et al. (2017)*[^2], qui dé
 4. Retour à 2. tant que le critère d'arrêt n'est pas rencontré
 5. Utiliser la recherche locale pour améliorer une dernière fois la solution
 
+## Génération d'une solution initiale
+
+Greedy algorithm for generating an initial solution
+
+- créer solution vide
+- itérer aléatoirement parmi le staff ; on considère 1 planning par staff
+- `SetDaysOff()` : bloquer les jours de repos demandés par le staff et empêcher d'assigner un poste à cet endroit
+- `AssignWorkDays()` : assigner aléatoirement les jours travaillés
+- **Check** : max number of workdays, min and max number of consecutive shift types (including days off),
+- `AssignShifts()` : assigner aléatoirement les shifts aux jours travaillés
+- **Check** : max number of shift types, avoid blocking shift types
+- Pour vérifier les contraintes restantes (max number of worked weekends + min/max total time of assigned shifts) :
+- Calculer pénalités $p_1$ et $p_2$
+- Si $p_1 + p_2 > 0$ : détruire planning (pour staff actuel) et recommencer
+- répéter pour tous les staff
 
 
 ## Références
