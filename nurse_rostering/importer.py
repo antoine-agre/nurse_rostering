@@ -145,11 +145,11 @@ class Importer:
         return problem
 
 # Tests
-importer = Importer()
-problem = importer.import_problem("Instance2.txt")
+# importer = Importer()
+# problem = importer.import_problem("Instance2.txt")
 
-print(problem.days_count)
-for shift_type in problem.shift_types:
-    print(shift_type)
-for staff in problem.staff:
-    print(staff)
+# print(problem.days_count)
+# for shift_type in problem.shift_types:
+#     print(shift_type)
+# for staff in problem.staff:
+#     print(staff)
