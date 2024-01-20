@@ -1,5 +1,8 @@
 from nurse_rostering.model.problem import Problem, Staff
 from nurse_rostering.io.importer import Importer
+from typing import List, Union, Optional
+
+Planning = List[List[Optional[int]]]
 
 class Solution:
     # planning: dict[int, dict[int, dict[int, bool]]]
@@ -8,21 +11,21 @@ class Solution:
     # planning[staff][jour] == int
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
-    def __init__(self, planning: list[list[int]]) -> None:
+    def __init__(self, planning: Planning) -> None:
         self.planning = planning
         # self.problem: Problem = problem
         self.greedy_initialize(problem)
     
     @classmethod
     def from_problem(cls, problem: Problem):
-        planning: list[list[int]] = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
+        planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
         return cls(planning)
     
     def greedy_initialize(self, problem: Problem)-> None:
         #TODO: select random staff order
-        for staff_int in len(problem.staff):
+        for staff_int in range(len(problem.staff)):
             staff: Staff = problem.staff[staff_int]
-            schedule: list[int|bool|None] = self.planning[staff_int]
+            schedule: List[Union[int, bool, None]] = self.planning[staff_int]
             
             # (days off are set as False and worked days as True in planning)
 
