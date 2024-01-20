@@ -20,7 +20,7 @@ Greedy algorithm for generating an initial solution
 - itérer aléatoirement parmi le staff ; on considère 1 planning par staff
 - `SetDaysOff()` : bloquer les jours de repos demandés par le staff et empêcher d'assigner un poste à cet endroit
 - `AssignWorkDays()` : assigner aléatoirement les jours travaillés
-- **Check** : max number of workdays, min and max number of consecutive shift types (including days off),
+- **Check** : max number of workdays (??), min and max number of consecutive shift types (including days off),
 - `AssignShifts()` : assigner aléatoirement les shifts aux jours travaillés
 - **Check** : max number of shift types, avoid blocking shift types
 - Pour vérifier les contraintes restantes (max number of worked weekends + min/max total time of assigned shifts) :

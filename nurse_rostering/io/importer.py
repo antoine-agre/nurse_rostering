@@ -1,5 +1,5 @@
 from enum import Enum
-from main import Problem, Staff, ShiftType
+from nurse_rostering.model.problem import Problem, Staff, ShiftType
 
 """
 Importe un problème à partir d'un fichier .txt.

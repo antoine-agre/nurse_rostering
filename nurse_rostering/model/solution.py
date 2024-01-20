@@ -1,5 +1,5 @@
-from main import Problem, Staff
-from importer import Importer
+from nurse_rostering.model.problem import Problem, Staff
+from nurse_rostering.io.importer import Importer
 
 class Solution:
     # planning: dict[int, dict[int, dict[int, bool]]]

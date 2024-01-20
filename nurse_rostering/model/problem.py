@@ -103,10 +103,3 @@ class Problem:
     #     for i, shift_type in enumerate(self.shift_types):
     #         out += self.shift_dict[i] + " " + shift_type
     #     return out
-
-# Exemple basé sur l'instance 1
-# problem: Problem = Problem(14)
-# problem.shift_types.append(ShiftType(480))
-# staff = Staff(max_worktime=4320, min_worktime=3360, max_consecutive_shifts=5, min_consecutive_shifts=2, min_consecutive_rest_days=2, max_worked_weekends=1)
-# staff.max_shift_days = [14]
-# problem.staff.append(staff)
