@@ -3,15 +3,14 @@ import os
 
 # A Verifier
 #info : une liste de couple ou de tuple (propriété,valeur)
-#info : 
 #
-#[  (SchedulingPeriodFile,""../../problem.txt""),
+# [ (SchedulingPeriodFile,""../../problem.txt""),
 #   ("Penalty","521"),
 #   ("DateFound","12/10/2023"),
 #   ("FoundBy","Arthur"),
 #   ("System,CPU","processeur Core i5"),
 #   ("Algorithm","VNS"),
-#   ("CpuTime","1235.02")  ]
+#   ("CpuTime","1235.02") ]
 #
 #planning[staff][day]=shift (None ou un entier)
 #intToType : relation entre les shift_id et l'identifiant correspondant dans l'enoncé du probleme
@@ -35,6 +34,7 @@ class Solution:
     
         #root of xml (.ros file)
         roster = ET.Element('Roster',attrib = {"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance","xsi:noNamespaceSchemaLocation":"Roster.xsd"})
+        
         #input info about problem resolution
         for item in self.info:
             element = ET.SubElement(roster,f"{item[0]}")
@@ -61,8 +61,6 @@ class Solution:
         
         #save file
         penality  = self.info[1][1]
-
-        
         solutionFilename : str = findFilenameWithoutExtension(self.info[0][1])+".Solution."+str(penality)+".ros"
         baseFolder = "../solutions/"
         solutionPath = baseFolder+solutionFilename+".Solution."+str(penality)+".ros"
