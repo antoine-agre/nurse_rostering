@@ -16,13 +16,15 @@ import os
 #intToType : relation entre les shift_id et l'identifiant correspondant dans l'enoncé du probleme
 #
 
-class Solution:
+""" Export the solution into .ros file """
+
+class Solution2file:
 
     def __init__(self,intToType:list[str],planning:list[list[int]],info:list[tuple[str,str]]):
         
-        self.intToType = intToType
-        self.info = info
-        self.planning = planning
+        self.intToType = intToType # shift index in the list to match shiftId in the problem
+        self.info = info # list of tuple (property,value) of informations about problem resolution 
+        self.planning = planning # matrix of solution
 
     def __info__(self):
         print("Informations about solution processing:")
