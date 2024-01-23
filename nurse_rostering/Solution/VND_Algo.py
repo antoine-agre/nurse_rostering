@@ -52,6 +52,8 @@ class VND:
 
     # Fonction de l'algorithme VND
     def variable_neighborhood_descent(self, max_k):
+        # Initialisation de la liste pour stocker les solutions
+        all_solutions = []
         current_solution = self.generate_random_solution()
 
         for k in range(1, max_k + 1):
@@ -61,8 +63,11 @@ class VND:
 
             if new_eval < current_eval:
                 current_solution = new_solution.copy()
+                all_solutions.append(current_solution.copy())  # Stocker la nouvelle solution
+                #retouner la liste des solutions à chaque fois. Au cas où le nombre d'itération est grand, on garde la liste des solutions
+                return all_solutions   
 
-        return current_solution
+        return current_solution, all_solutions
 
 
 # Exemple d'utilisation
