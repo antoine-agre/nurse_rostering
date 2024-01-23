@@ -1,4 +1,4 @@
-import xml.etreeElementTree as ET
+import xml.etree.ElementTree as ET
 import os
 
 # A Verifier
