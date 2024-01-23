@@ -14,7 +14,7 @@ class Solution:
     # planning[staff][jour] == int
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
-    def __init__(self, planning: Planning) -> None:
+    def __init__(self, planning: Planning, problem: Problem) -> None:
         self.planning = planning
         # self.problem: Problem = problem
         self.greedy_initialize(problem)
@@ -22,7 +22,7 @@ class Solution:
     @classmethod
     def from_problem(cls, problem: Problem):
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
-        return cls(planning)
+        return cls(planning, problem)
     
     def is_feasible(self, problem: Problem)-> bool:
         """Indicates wether the solution's hard constraints are respected."""
