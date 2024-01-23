@@ -1,5 +1,6 @@
 from enum import Enum
 from nurse_rostering.model.problem import Problem, Staff, ShiftType
+from typing import List, Dict, Optional
 
 """
 Importe un problème à partir d'un fichier .txt.
@@ -17,13 +18,13 @@ class Importer:
         COVER = 7
 
 
-    def import_problem(self, filename: str):
+    def import_problem(self, filename: str) -> Problem:
 
-        current_section: Importer.Section = None
-        problem: Problem = None
+        current_section: Importer.Section
+        problem: Problem
 
         # Holds shift block instructions until all shifts are registered
-        held_shift_blocks: dict[int, list[str]] = {}
+        held_shift_blocks: Dict[int, List[str]] = {}
 
         with open(filename) as f:
             for i, line in enumerate(f):
@@ -35,7 +36,8 @@ class Importer:
                     if current_section == Importer.Section.SHIFTS:
                         # Save held shift blocks
                         for shift_int in held_shift_blocks.keys():
-                            blocked_shift_ints: list[int] = [problem.shift_int_from_id(id) for id in held_shift_blocks[shift_int]]
+                            
+                            blocked_shift_ints: List[int] = [problem.shift_int_from_id(id) for id in held_shift_blocks[shift_int]]
                             problem.shift_types[shift_int].blocked_shift_types = blocked_shift_ints
 
                     # print(f"[{i} EMPTY] {line}")
@@ -48,7 +50,7 @@ class Importer:
                 else: #Ligne effective
                     # print(f"[{i}] {line}")
 
-                    tokens: list[str] = line.split(',')
+                    tokens: List[str] = line.split(',')
                     # print(tokens)
 
                     match current_section:
@@ -59,7 +61,7 @@ class Importer:
                             # Tokens
                             shift_id: str = tokens[0]
                             length: int = int(tokens[1])
-                            blocked_shift_ids: list[str] = tokens[2].split('|')
+                            blocked_shift_ids: List[str] = tokens[2].split('|')
 
                             # Create shift type with duration
                             shift: ShiftType = ShiftType(shift_id, length)
@@ -77,7 +79,7 @@ class Importer:
                         case Importer.Section.STAFF:
                             # Tokens
                             staff_id: str = tokens[0]
-                            max_shifts: list[list[str]] = [x.split('=') for x in tokens[1].split('|')]
+                            max_shifts: List[List[str]] = [x.split('=') for x in tokens[1].split('|')]
                             max_total_minutes: int = int(tokens[2])
                             min_total_minutes: int = int(tokens[3])
                             max_consecutive_shifts: int = int(tokens[4])
@@ -99,57 +101,70 @@ class Importer:
                             # Add staff to problem
                             problem.staff.append(staff)
                         case Importer.Section.DAYS_OFF:
-                            # Tokens
-                            staff_id: str = tokens[0]
-                            days_off: list[int] = [int(x) for x in tokens[1:]]
-
-                            # Set rest days
-                            staff_int: int = problem.staff_int_from_id(staff_id)
-                            if staff_int != None:
-                                problem.staff[staff_int].rest_days = days_off
+                            _parse_days_off(problem, tokens)
                         case Importer.Section.SHIFT_ON_REQUESTS:
-                            # Tokens
-                            staff_id: str = tokens[0]
-                            shift_id: str = tokens[2]
-                            day: int = int(tokens[1])
-                            weight: int = int(tokens[3])
-
-                            # Add shift on request
-                            staff: Staff = problem.staff[problem.staff_int_from_id(staff_id)]
-                            shift_int: int = problem.shift_int_from_id(shift_id)
-                            staff.shift_wish_penalties[day][shift_int] = weight
+                            _parse_shifts_on_requests(problem, tokens)
                         case Importer.Section.SHIFT_OFF_REQUESTS:
-                            # Tokens
-                            staff_id: str = tokens[0]
-                            shift_id: str = tokens[2]
-                            day: int = int(tokens[1])
-                            weight: int = int(tokens[3])
-
-                            # Add shift on request
-                            staff: Staff = problem.staff[problem.staff_int_from_id(staff_id)]
-                            shift_int: int = problem.shift_int_from_id(shift_id)
-                            staff.shift_avoid_penalties[day][shift_int] = weight
+                            _parse_shifts_off_requests(problem, tokens)
                         case Importer.Section.COVER:
-                            # Tokens
-                            # day: int = int(tokens[0])
-                            shift_id: str = tokens[1]
-                            requirement: int = int(tokens[2])
-                            weight_under: int = int(tokens[3])
-                            weight_over: int = int(tokens[4])
-
-                            # Set cover values
-                            shift: ShiftType = problem.shift_types[problem.shift_int_from_id(shift_id)]
-                            shift.staff_requirements.append(requirement)
-                            shift.cover_below_penalties.append(weight_under)
-                            shift.cover_above_penalties.append(weight_over)
+                            _parse_cover(problem, tokens)
         return problem
 
-# Tests
-# importer = Importer()
-# problem = importer.import_problem("Instance2.txt")
+def _parse_days_off(problem: Problem, tokens: List[str]) -> None:
+    # Tokens
+    staff_id: str = tokens[0]
+    days_off: List[int] = [int(x) for x in tokens[1:]]
 
-# print(problem.days_count)
-# for shift_type in problem.shift_types:
-#     print(shift_type)
-# for staff in problem.staff:
-#     print(staff)
+    # Set rest days
+    staff_int: int = problem.staff_int_from_id(staff_id)
+    problem.staff[staff_int].rest_days = days_off
+
+def _parse_shifts_on_requests(problem: Problem, tokens: List[str]) -> None:
+    # Tokens
+    staff_id: str = tokens[0]
+    shift_id: str = tokens[2]
+    day: int = int(tokens[1])
+    weight: int = int(tokens[3])
+
+    # Add shift on request
+    staff: Staff = problem.staff[problem.staff_int_from_id(staff_id)]
+    shift_int: int = problem.shift_int_from_id(shift_id)
+    staff.shift_wish_penalties[day][shift_int] = weight
+
+def _parse_shifts_off_requests(problem: Problem, tokens: List[str]) -> None:
+    # Tokens
+    staff_id: str = tokens[0]
+    shift_id: str = tokens[2]
+    day: int = int(tokens[1])
+    weight: int = int(tokens[3])
+
+    # Add shift on request
+    staff: Staff = problem.staff[problem.staff_int_from_id(staff_id)]
+    shift_int: int = problem.shift_int_from_id(shift_id)
+    staff.shift_avoid_penalties[day][shift_int] = weight
+
+def _parse_cover(problem: Problem, tokens: List[str]) -> None:
+    # Tokens
+    # day: int = int(tokens[0])
+    shift_id: str = tokens[1]
+    requirement: int = int(tokens[2])
+    weight_under: int = int(tokens[3])
+    weight_over: int = int(tokens[4])
+
+    # Set cover values
+    shift: ShiftType = problem.shift_types[problem.shift_int_from_id(shift_id)]
+    shift.staff_requirements.append(requirement)
+    shift.cover_below_penalties.append(weight_under)
+    shift.cover_above_penalties.append(weight_over)
+
+
+
+if __name__ == "__main__":
+    importer = Importer()
+    problem = importer.import_problem("Instance1.txt")
+
+    print(problem.days_count)
+    for shift_type in problem.shift_types:
+        print(shift_type)
+    for staff in problem.staff:
+        print(staff)
