@@ -2,13 +2,16 @@ import time
 import random
 
 from model.problem import Problem
+from nurse_rostering.model.solution import Solution
+from nurse_rostering.model.problem import Problem
+from nurse_rostering.io.importer import Importer
 
 class VND:
     def __init__(self, problem):
-        self.problem = problem
+        self.problem: Problem = problem
 
     # Fonction d'évaluation de la solution
-    def evaluate(self, solution):
+    def evaluate(self, solution: Solution):
         total_penalty = 0
 
         for staff_member in self.problem.staff:
@@ -51,7 +54,7 @@ class VND:
         return solution
 
     # Fonction de l'algorithme VND
-    def variable_neighborhood_descent(self, max_k):
+    def variable_neighborhood_descent(self, max_k, initial_solution: Solution):
         # Initialisation de la liste pour stocker les solutions
         all_solutions = []
         current_solution = self.generate_random_solution()

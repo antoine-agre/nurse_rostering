@@ -113,8 +113,7 @@ class Solution:
                     # print("requested days off")
                     return False
 
-        return True
-            
+        return True            
 
     def greedy_initialize(self, problem: Problem)-> None:
         

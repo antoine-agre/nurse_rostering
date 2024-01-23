@@ -13,9 +13,9 @@ infos = [ ("SchedulingPeriodFile","./Instance3.ros"), # chemin absolu | chemin r
 
 problem = Importer().import_problem("Instance3.txt")
 print(problem)
-a = Solution.from_problem(problem)
+# a = Solution.from_problem(problem)
 
-print(a.planning)
+# print(a.planning)
 
-s2f = Solution2file(problem, a.planning, infos, "Instance3")
-s2f.generate_rosterFile(".")
+# s2f = Solution2file(problem, a.planning, infos, "Instance3")
+# s2f.generate_rosterFile(".")

@@ -26,7 +26,7 @@ class Staff:
         self.max_worked_weekends: int = max_worked_weekends
         # Pour chaque poste, le nombre de jour maximum où cet employé peut y être assigné
         self.max_shift_days: List[int] = []
-        # Pour chaque jour et poste, la pénalité si l'employé ni est pas assigné
+        # Pour chaque jour et poste, la pénalité si l'employé n'y est pas assigné
         self.shift_wish_penalties: List[List[Optional[int]]] = [[None for _ in range(shift_count)] for _ in range(days_count)]
         # Pour chaque jour et poste, la pénalité si l'employé y est assigné
         self.shift_avoid_penalties: List[List[Optional[int]]] = [[None for _ in range(shift_count)] for _ in range(days_count)]
