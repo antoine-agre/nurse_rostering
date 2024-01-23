@@ -158,12 +158,13 @@ def _parse_cover(problem: Problem, tokens: List[str]) -> None:
     shift.cover_above_penalties.append(weight_over)
 
 
-# Tests
-# importer = Importer()
-# problem = importer.import_problem("Instance2.txt")
 
-# print(problem.days_count)
-# for shift_type in problem.shift_types:
-#     print(shift_type)
-# for staff in problem.staff:
-#     print(staff)
+if __name__ == "__main__":
+    importer = Importer()
+    problem = importer.import_problem("Instance1.txt")
+
+    print(problem.days_count)
+    for shift_type in problem.shift_types:
+        print(shift_type)
+    for staff in problem.staff:
+        print(staff)
