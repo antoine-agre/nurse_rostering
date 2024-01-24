@@ -3,7 +3,7 @@ from nurse_rostering.io.importer import Importer
 from typing import List, Union, Optional, Any
 from random import random, randint, randrange
 
-# None = day off, int = shift
+# None = day off, int = shift_types
 Planning = List[List[Optional[int]]]
 PersonnalSchedule = List[Optional[int]]
 
@@ -12,7 +12,7 @@ class Solution:
     # planning: list[list[list[bool]]]
     # planning: list[list[int]]
     # planning[staff][jour] == int
-    # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
+    # self.planning: list[list[int]] #planning[staff][jour] = int de shift_types ou None
 
     def __init__(self, planning: Planning, problem: Problem) -> None:
         self.planning = planning
@@ -43,7 +43,7 @@ class Solution:
                         # print("Blocking shifts")
                         return False
             
-        # Max shift
+        # Max shift_types
         for staff_int in range(len(self.planning)):
             schedule = self.planning[staff_int]
             max_shift_days = problem.staff[staff_int].max_shift_days
@@ -114,7 +114,45 @@ class Solution:
                     return False
 
         return True
-            
+    
+    def value(self,problem : Problem):
+        
+        cover_abovePenality = 0
+        cover_belowPenality = 0
+        shift_avoidedPenality = 0
+        shift_wishedPenality = 0
+
+        staff = problem.staff
+        shift_types = problem.shift_types
+        planning = self.planning
+        
+        #penality about staff requirements
+        for i_shift in range(len(shift_types)):
+            for i_day in range(len(planning[0])):
+
+                diff_s = sum(assign == i_shift for assign in [employee[i_day] for employee in planning]) - shift_types[i_shift].staff_requirements[i_day]
+                if diff_s >0:
+                    cover_abovePenality += diff_s * shift_types[i_shift].cover_above_penalties[i_day]
+                else:
+                    cover_belowPenality += (-diff_s) * shift_types[i_shift].cover_below_penalties[i_day]
+        
+        # Section Request
+        for i_employee in range(len(planning)):
+            for i_day in range(len(planning[0])):
+                for i_shift in range(len(shift_types)):
+
+                    # penality for shifts off requests 
+                    off_penality = staff[i_employee].shift_avoid_penalties[i_day][i_shift]
+                    if off_penality != None and planning[i_employee][i_day]==i_shift:
+                        shift_avoidedPenality += off_penality
+
+                    # penality for shifts on requests 
+                    on_penality = staff[i_employee].shift_wish_penalties[i_day][i_shift]
+                    if on_penality!=  None and planning[i_day][i_shift]!=i_shift:
+                        shift_wishedPenality += on_penality
+        
+        return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
+
 
     def greedy_initialize(self, problem: Problem)-> None:
         
@@ -298,33 +336,33 @@ def assign_shifts(problem: Problem, staff: Staff, schedule: PersonnalSchedule) -
         # print(schedule_copy)
         # print("left :", shifts_left)
 
-        # random shift still available
+        # random shift_types still available
         available_shifts = [i for (i, left) in enumerate(shifts_left) if left > 0]
         shift_int = available_shifts[randrange(len(available_shifts))]
-        # print("trying for shift", shift_int)
+        # print("trying for shift_types", shift_int)
 
         # random non-assigned, non-blocking day
         available_days = [i for (i, elem) in enumerate(schedule_copy) if elem == -1]
         day_int: Optional[int] = None
 
-        # try to find valid day; after 100 tries, picks new shift
+        # try to find valid day; after 100 tries, picks new shift_types
         for _ in range(100):
             day_int = available_days[randrange(len(available_days))]
             # print("picked day", day_int)
-            if day_int > 0: # check previous shift, blocking this one
+            if day_int > 0: # check previous shift_types, blocking this one
                 blocking_shift = schedule_copy[day_int-1]
                 if blocking_shift != None and blocking_shift >= 0:
                     if shift_int in problem.shift_types[blocking_shift].blocked_shift_types:
-                        # print(f"shift {shift_int} blocked by {blocking_shift}")
+                        # print(f"shift_types {shift_int} blocked by {blocking_shift}")
                         day_int = None
-                        # print(f"blocked by previous shift ({blocking_shift})")
-            if day_int != None and day_int < len(schedule_copy) - 1: # check next shift, blocked by this one
+                        # print(f"blocked by previous shift_types ({blocking_shift})")
+            if day_int != None and day_int < len(schedule_copy) - 1: # check next shift_types, blocked by this one
                 blocked_shift = schedule_copy[day_int+1]
                 if blocked_shift != None and blocked_shift >= 0:
                     if blocked_shift in problem.shift_types[shift_int].blocked_shift_types:
-                        # print(f"shift {shift_int} blocking {blocked_shift}")
+                        # print(f"shift_types {shift_int} blocking {blocked_shift}")
                         day_int = None
-                        # print(f"blocking next shift ({blocked_shift})")
+                        # print(f"blocking next shift_types ({blocked_shift})")
             if day_int != None: break
 
         if day_int == None:
