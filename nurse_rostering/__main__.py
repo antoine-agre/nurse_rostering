@@ -16,6 +16,7 @@ print(problem)
 a = Solution.from_problem(problem)
 
 print(a.planning)
+print("VALUE :", a.value(problem))
 
 s2f = Solution2file(problem, a.planning, infos, "Instance3")
 s2f.generate_rosterFile(".")

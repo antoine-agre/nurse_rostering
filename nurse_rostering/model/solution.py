@@ -137,22 +137,21 @@ class Solution:
                     cover_belowPenality += (-diff_s) * shift_types[i_shift].cover_below_penalties[i_day]
         
         # Section Request
-        for i_employee in range(len(planning)):
-            for i_day in range(len(planning[0])):
+        for i_employee in range(len(staff)):
+            for i_day in range(problem.days_count):
                 for i_shift in range(len(shift_types)):
 
                     # penality for shifts off requests 
                     off_penality = staff[i_employee].shift_avoid_penalties[i_day][i_shift]
-                    if off_penality != None and planning[i_employee][i_day]==i_shift:
+                    if off_penality != None and planning[i_employee][i_day] == i_shift:
                         shift_avoidedPenality += off_penality
 
                     # penality for shifts on requests 
                     on_penality = staff[i_employee].shift_wish_penalties[i_day][i_shift]
-                    if on_penality!=  None and planning[i_day][i_shift]!=i_shift:
+                    if on_penality != None and planning[i_employee][i_day] != i_shift:
                         shift_wishedPenality += on_penality
         
         return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
-
 
     def greedy_initialize(self, problem: Problem)-> None:
         
