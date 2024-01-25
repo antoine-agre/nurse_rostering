@@ -2,6 +2,7 @@ from nurse_rostering.model.problem import Problem, Staff, ShiftType
 from nurse_rostering.io.importer import Importer
 from typing import List, Union, Optional, Any
 from random import random, randint, randrange
+from copy import deepcopy
 
 # None = day off, int = shift
 Planning = List[List[Optional[int]]]
@@ -15,9 +16,9 @@ class Solution:
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
     def __init__(self, planning: Planning, problem: Problem) -> None:
-        self.planning = planning
-        # self.problem: Problem = problem
-        self.greedy_initialize(problem)
+        self.planning: Planning = planning
+        self.problem: Problem = problem
+        self.greedy_initialize()
     
     def deep_copy(self):
         return Solution(deepcopy(self.planning), self.problem)
@@ -27,7 +28,7 @@ class Solution:
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
         return cls(planning, problem)
     
-    def is_feasible(self, problem: Problem)-> bool:
+    def is_feasible(self)-> bool:
         """Indicates wether the solution's hard constraints are respected."""
 
         # Check -1 values
@@ -42,14 +43,14 @@ class Solution:
                 current_shift = schedule[d]
                 previous_shift = schedule[d - 1]
                 if current_shift != None and previous_shift != None:
-                    if current_shift in problem.shift_types[previous_shift].blocked_shift_types:
+                    if current_shift in self.problem.shift_types[previous_shift].blocked_shift_types:
                         # print("Blocking shifts")
                         return False
             
         # Max shift
         for staff_int in range(len(self.planning)):
             schedule = self.planning[staff_int]
-            max_shift_days = problem.staff[staff_int].max_shift_days
+            max_shift_days = self.problem.staff[staff_int].max_shift_days
             shift_count = [0 for _ in range(len(max_shift_days))]
             for day in schedule:
                 if day != None:
@@ -65,15 +66,15 @@ class Solution:
             minutes = 0
             for day in schedule:
                 if day != None:
-                    minutes += problem.shift_types[day].duration
-            staff = problem.staff[staff_int]
+                    minutes += self.problem.shift_types[day].duration
+            staff = self.problem.staff[staff_int]
             if minutes > staff.max_worktime or minutes < staff.min_worktime:
                 # print("max/min minutes worked")
                 return False
         
         # Max/min consecutive shifts and min consecutive days off
         for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
+            staff = self.problem.staff[staff_int]
             schedule = self.planning[staff_int].copy()
             while len(schedule) > 0:
                 content_type = type(schedule.pop(0))
@@ -94,7 +95,7 @@ class Solution:
         
         # Max number of weekends
         for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
+            staff = self.problem.staff[staff_int]
             schedule = self.planning[staff_int]
             max_weekends = staff.max_worked_weekends
             weekends = []
@@ -109,7 +110,7 @@ class Solution:
         
         # Requested days off
         for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
+            staff = self.problem.staff[staff_int]
             schedule = self.planning[staff_int]
             for rest_day in staff.rest_days:
                 if schedule[rest_day] != None:
@@ -118,15 +119,15 @@ class Solution:
 
         return True
     
-    def value(self,problem : Problem):
+    def value(self):
         
         cover_abovePenality = 0
         cover_belowPenality = 0
         shift_avoidedPenality = 0
         shift_wishedPenality = 0
 
-        staff = problem.staff
-        shift_types = problem.shift_types
+        staff = self.problem.staff
+        shift_types = self.problem.shift_types
         planning = self.planning
         
         #penality about staff requirements
@@ -141,7 +142,7 @@ class Solution:
         
         # Section Request
         for i_employee in range(len(staff)):
-            for i_day in range(problem.days_count):
+            for i_day in range(self.problem.days_count):
                 for i_shift in range(len(shift_types)):
 
                     # penality for shifts off requests 
@@ -156,20 +157,20 @@ class Solution:
         
         return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
 
-    def greedy_initialize(self, problem: Problem)-> None:
+    def greedy_initialize(self)-> None:
         
-        while not self.is_feasible(problem):
+        while not self.is_feasible():
 
             print("\tloop")
 
-            staff_ints = [i for i in range(len(problem.staff))]
+            staff_ints = [i for i in range(len(self.problem.staff))]
             staff_order = []
             while len(staff_ints) > 0:
                 staff_order.append(staff_ints.pop(randrange(len(staff_ints))))
 
             for staff_int in staff_order:
                 print("\r", staff_order.index(staff_int), "/", len(staff_order), end="")
-                staff: Staff = problem.staff[staff_int]
+                staff: Staff = self.problem.staff[staff_int]
                 schedule: Optional[PersonnalSchedule] = self.planning[staff_int].copy()
                 conditions = False
                 
@@ -179,7 +180,7 @@ class Solution:
 
                 while conditions != True:
                     # SetDaysOff()
-                    schedule = set_days_off(problem, staff, schedule)
+                    schedule = set_days_off(self.problem, staff, schedule)
 
                     # AssignWorkDays()
                     schedule = assign_work_days(staff, schedule)
@@ -189,7 +190,7 @@ class Solution:
                     #AssignShifts()
                     while -1 in schedule:
                         # print("count")
-                        schedule = assign_shifts(problem, staff, schedule)
+                        schedule = assign_shifts(self.problem, staff, schedule)
                         count += 1
                         if count > 100:
                             break
@@ -197,7 +198,7 @@ class Solution:
                         break
 
                     # print(f"[{staff_int}]", schedule)
-                    conditions = evaluate_weekend(staff, schedule) and evaluate_workload(problem, staff, schedule)
+                    conditions = evaluate_weekend(staff, schedule) and evaluate_workload(self.problem, staff, schedule)
                 
                 if count > 100:
                     # count = 0
@@ -417,7 +418,7 @@ if __name__ == "__main__":
     a = Solution.from_problem(problem)
     # a.greedy_initialize(problem)
     print(a.planning)
-    print("FEASIBLE :", a.is_feasible(problem))
+    print("FEASIBLE :", a.is_feasible())
 
     # test = [-1, None,-1, -1, None, None, None, -1, -1, -1, -1, -1, -1, -1, None, -1, -1, None, -1, -1, None, None, -1]
     # test = [(None if random() > 0.9 else -1) for _ in range(365)]
