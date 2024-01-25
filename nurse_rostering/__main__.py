@@ -13,7 +13,21 @@ infos = [ ("SchedulingPeriodFile","./Instance3.ros"), # chemin absolu | chemin r
 
 problem = Importer().import_problem("Instance3.txt")
 print(problem)
-# a = Solution.from_problem(problem)
+a = Solution.from_problem(problem)
+
+print()
+print(a.planning)
+
+print("VALUE :", a.value())
+
+from nurse_rostering.model.neighborhood import TwoExchangeNeighborhood
+neighborhood = TwoExchangeNeighborhood(problem)
+best_neighbor = neighborhood.best_neighbor(a)
+
+print("\n\n Best neighbor :")
+print(best_neighbor.planning)
+
+print("VALUE :", best_neighbor.value())
 
 # print(a.planning)
 
