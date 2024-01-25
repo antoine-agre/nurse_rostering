@@ -19,6 +19,9 @@ class Solution:
         # self.problem: Problem = problem
         self.greedy_initialize(problem)
     
+    def deep_copy(self):
+        return Solution(deepcopy(self.planning), self.problem)
+
     @classmethod
     def from_problem(cls, problem: Problem):
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
