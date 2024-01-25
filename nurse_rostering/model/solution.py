@@ -113,7 +113,45 @@ class Solution:
                     # print("requested days off")
                     return False
 
-        return True            
+        return True
+    
+    def value(self,problem : Problem):
+        
+        cover_abovePenality = 0
+        cover_belowPenality = 0
+        shift_avoidedPenality = 0
+        shift_wishedPenality = 0
+
+        staff = problem.staff
+        shift_types = problem.shift_types
+        planning = self.planning
+        
+        #penality about staff requirements
+        for i_shift in range(len(shift_types)):
+            for i_day in range(len(planning[0])):
+
+                diff_s = sum(assign == i_shift for assign in [employee[i_day] for employee in planning]) - shift_types[i_shift].staff_requirements[i_day]
+                if diff_s >0:
+                    cover_abovePenality += diff_s * shift_types[i_shift].cover_above_penalties[i_day]
+                else:
+                    cover_belowPenality += (-diff_s) * shift_types[i_shift].cover_below_penalties[i_day]
+        
+        # Section Request
+        for i_employee in range(len(staff)):
+            for i_day in range(problem.days_count):
+                for i_shift in range(len(shift_types)):
+
+                    # penality for shifts off requests 
+                    off_penality = staff[i_employee].shift_avoid_penalties[i_day][i_shift]
+                    if off_penality != None and planning[i_employee][i_day] == i_shift:
+                        shift_avoidedPenality += off_penality
+
+                    # penality for shifts on requests 
+                    on_penality = staff[i_employee].shift_wish_penalties[i_day][i_shift]
+                    if on_penality != None and planning[i_employee][i_day] != i_shift:
+                        shift_wishedPenality += on_penality
+        
+        return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
 
     def greedy_initialize(self, problem: Problem)-> None:
         

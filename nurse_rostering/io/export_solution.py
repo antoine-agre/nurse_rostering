@@ -89,7 +89,7 @@ def findFilenameWithoutExtension(path):
 
 if __name__ == "__main__":
 
-    infos = [ ("SchedulingPeriodFile","../Instance_x.ros"), # chemin absolu | chemin relatif par rapport au fichier solution.
+    infos = [ ("SchedulingPeriodFile","/nurse_rostering/examples/Instance1.ros"), # chemin absolu | chemin relatif par rapport au fichier solution.
         ("Penalty","521"),
         ("DateFound","12/10/2023"),
         ("FoundBy","Arthur"),
