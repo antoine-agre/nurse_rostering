@@ -38,7 +38,7 @@ def info_provider(solution):
 
         informations = [
                         ("SchedulingPeriodFile", f"{solution.pathTowardsProblem}"),
-                        ("penality",f"{solution.value()}"),                 
+                        ("Penality",f"{solution.value()}"),                 
                         ("DateFound",date),
                         ("FoundBy",authors),
                         ("Algorithm",algorithm),
