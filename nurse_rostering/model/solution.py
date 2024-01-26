@@ -2,7 +2,7 @@ from nurse_rostering.model.problem import Problem, Staff, ShiftType
 from nurse_rostering.io.importer import Importer
 from typing import List, Union, Optional, Any
 from random import random, randint, randrange
-
+import time
 # None = day off, int = shift
 Planning = List[List[Optional[int]]]
 PersonnalSchedule = List[Optional[int]]
@@ -15,6 +15,9 @@ class Solution:
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
     def __init__(self, planning: Planning, problem: Problem) -> None:
+
+        self.pathTowardsProblem: str= ""
+        self.cpu_time: int = 0
         self.planning = planning
         # self.problem: Problem = problem
         self.greedy_initialize(problem)
@@ -156,6 +159,8 @@ class Solution:
 
     def greedy_initialize(self, problem: Problem)-> None:
         
+        start_cpu_time = time.process_time()
+
         while not self.is_feasible(problem):
 
             print("\tloop")
@@ -203,6 +208,8 @@ class Solution:
 
                 # if schedule == None: break
                 self.planning[staff_int] = schedule
+        end_cpu_time = time.process_time()
+        self.cpu_time = end_cpu_time - start_cpu_time
             
     
 def set_days_off(problem: Problem, staff: Staff, schedule: PersonnalSchedule) -> PersonnalSchedule:
@@ -403,6 +410,7 @@ def evaluate_weekend(staff: Staff, schedule: PersonnalSchedule) -> bool:
             max_worked_weekends -= 1
     
     return max_worked_weekends >= 0
+
 
 
 if __name__ == "__main__":
