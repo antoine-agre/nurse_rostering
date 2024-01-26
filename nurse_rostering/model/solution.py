@@ -40,6 +40,7 @@ class Solution:
         return True
 
     def value(self):
+        """Evaluates and returns the value of the solution."""
         
         cover_abovePenality = 0
         cover_belowPenality = 0
@@ -452,6 +453,7 @@ def evaluate_weekend(staff: Staff, schedule: PersonnalSchedule) -> bool:
 if __name__ == "__main__":
 
     problem: Problem = Importer().import_problem("Instance2.txt")
+    problem: Problem = Importer().import_problem("Instance1.txt")
     # sol: Solution = Solution(problem)
     # print(sol.planning)
 
