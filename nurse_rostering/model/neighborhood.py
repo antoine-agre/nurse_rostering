@@ -12,7 +12,7 @@ class Neighborhood:
     def __init__(self, problem: Problem) -> None:
         self.problem = problem
     
-    def best_neighbor(self, solution: Solution):
+    def best_neighbor(self, solution: Solution) -> Solution:
         """Return best neighbor of solution in this neighborhood structure."""
         pass
 
@@ -30,7 +30,7 @@ class TwoExchangeNeighborhood(Neighborhood):
     def __init__(self, problem: Problem) -> None:
         super().__init__(problem)
     
-    def best_neighbor(self, solution: Solution):
+    def best_neighbor(self, solution: Solution) -> Solution:
         # Variables
         best_solution: Solution = solution
         best_value: int = solution.value()
@@ -38,6 +38,8 @@ class TwoExchangeNeighborhood(Neighborhood):
         # For all staff pairs
         for first_staff_int in range(len(self.problem.staff)):
             for second_staff_int in range(first_staff_int + 1, len(self.problem.staff)):
+
+                # print(f"{first_staff_int}/{second_staff_int}")
                 
                 first_planning = solution.planning[first_staff_int]
                 second_planning = solution.planning[second_staff_int]
@@ -45,10 +47,11 @@ class TwoExchangeNeighborhood(Neighborhood):
                 # For all days
                 for day in range(self.problem.days_count):
 
+                    #TODO : allow exchanging rest days
                     if (first_planning[day] != None and second_planning[day] != None
                         and first_planning[day] != second_planning[day]):
                         
-                        print("neighbor considered !")
+                        # print("neighbor considered !")
                         neighbor: Solution = solution.deep_copy()
                         neighbor.planning[first_staff_int][day] = second_planning[day]
                         neighbor.planning[second_staff_int][day] = first_planning[day]
