@@ -18,7 +18,8 @@ class Solution:
     def __init__(self, planning: Planning, problem: Problem) -> None:
         self.planning: Planning = planning
         self.problem: Problem = problem
-        self.greedy_initialize()
+        # self.greedy_initialize()
+        self.generate_solution()
     
     def deep_copy(self):
         return Solution(deepcopy(self.planning), self.problem)
@@ -75,6 +76,45 @@ class Solution:
                         shift_wishedPenality += on_penality
         
         return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
+
+    def generate_solution(self) -> None:
+
+        # Empirical bound, to experiment with
+        max_tries = 100 * self.problem.days_count
+
+        for staff_int in range(len(self.problem.staff)):
+            # print(f"\r{staff_int+1}/{len(self.problem.staff)}")
+
+
+            schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
+            staff: Staff = self.problem.staff[staff_int]
+            
+            while not is_personal_schedule_feasible(schedule, self.problem, staff_int):
+                schedule = deepcopy(self.planning[staff_int])
+
+                schedule = set_days_off(self.problem, staff, schedule)
+                schedule = assign_work_days(staff, schedule)
+                # print(schedule)
+                
+                # Randomly assign shifts
+                available_shifts = staff.max_shift_days.copy()
+                # print(available_shifts)
+
+                loops = 0
+                while -1 in schedule:
+                    day = randrange(len(schedule))
+                    shift = randrange(len(available_shifts))
+                    if available_shifts[shift] > 0 and schedule[day] == -1:
+                        available_shifts[shift] -= 1
+                        schedule[day] = shift
+                    loops += 1
+                    if loops > max_tries:
+                        break
+                # print(schedule)
+            
+            self.planning[staff_int] = schedule
+
+            
 
     def greedy_initialize(self)-> None:
         
@@ -239,8 +279,8 @@ def assign_work_days(staff: Staff, schedule: PersonnalSchedule) -> PersonnalSche
     
     return schedule
 
-# Replace worked day blocks below minimum size by rest days
 def _fix_min_work_days(schedule: PersonnalSchedule, min_shifts: int) -> PersonnalSchedule:
+    """Replace worked day blocks below minimum size by rest days."""
     start: Any = None
     end: Any = None
     for i in range(len(schedule)):
@@ -256,8 +296,8 @@ def _fix_min_work_days(schedule: PersonnalSchedule, min_shifts: int) -> Personna
                 start, end = None, None
     return schedule
 
-# Randomly extend off day blocks below minimum size
 def _fix_min_off_days(schedule: PersonnalSchedule, min_off_days: int) -> PersonnalSchedule:
+    """Randomly extend off day blocks below minimum size."""
     start, end = None, None
     for i in range(len(schedule)):
         if start == None:
@@ -280,8 +320,8 @@ def _fix_min_off_days(schedule: PersonnalSchedule, min_off_days: int) -> Personn
                 start, end = None, None
     return schedule
 
-# Randomly add off days to work day blocks above max size
 def _fix_max_work_days(schedule: PersonnalSchedule, max_shifts: int, min_shifts: int, min_off_days: int) -> PersonnalSchedule:
+    """Randomly add off days to work day blocks above max size."""
     start: Any = None
     end: Any = None
     for i in range(len(schedule)):
@@ -306,8 +346,8 @@ def _fix_max_work_days(schedule: PersonnalSchedule, max_shifts: int, min_shifts:
                 start, end = None, None
     return schedule
 
-# Returns true if work days constraints are followed
 def _check_work_days_constraints(schedule: PersonnalSchedule, max_shifts: int, min_shifts: int, min_off_days: int) -> bool:
+    """Returns true if work days constraints are followed."""
     s = schedule.copy()
     while len(s) > 0:
         length: int = 0
