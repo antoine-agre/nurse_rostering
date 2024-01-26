@@ -209,7 +209,9 @@ def is_personal_schedule_feasible(schedule: PersonnalSchedule,
 
 def set_days_off(problem: Problem, staff: Staff, schedule: PersonnalSchedule) -> PersonnalSchedule:
     for d in range(problem.days_count):
-        if d not in staff.rest_days:
+        if d in staff.rest_days:
+            schedule[d] = None
+        else:
             schedule[d] = -1
     return schedule
 
