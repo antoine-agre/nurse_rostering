@@ -83,9 +83,10 @@ class Solution:
 
         # Empirical bound, to experiment with
         max_tries = 100 * self.problem.days_count
+        # print("Génération d'un solution initiale :")
 
         for staff_int in range(len(self.problem.staff)):
-            print(f"\r{staff_int+1}/{len(self.problem.staff)}")
+            # print(f"\r{staff_int+1}/{len(self.problem.staff)} staff", end="")
 
 
             schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
@@ -129,6 +130,7 @@ class Solution:
                     # print("worktime :", worktime, ", max :", staff.max_worktime)
             
             self.planning[staff_int] = schedule
+        # print()
 
             
 
@@ -235,7 +237,7 @@ def is_personal_schedule_feasible(schedule: PersonnalSchedule,
             count += 1
         
         if content_type == type(None) and count < staff.min_consecutive_rest_days:
-            print("min consecutive rest days")
+            # print("min consecutive rest days")
             return False
         elif count < staff.min_consecutive_shifts or count > staff.max_consecutive_shifts:
             # print("content :", content_type, "count :", count)

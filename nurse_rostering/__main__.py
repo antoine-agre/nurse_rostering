@@ -13,19 +13,21 @@ infos = [ ("SchedulingPeriodFile","./Instance3.ros"), # chemin absolu | chemin r
         ("Algorithm","VNS"),
         ("CpuTime","1235.02") ]
 
-problem = Importer().import_problem("nurse_rostering/examples/Instance2.txt")
+problem = Importer().import_problem("nurse_rostering/examples/Instance3.txt")
 print(problem)
 a = Solution.from_problem(problem)
 
 print(a.planning)
 
-# print(a.value())
+print(a.value())
 
-# vnd = VND(problem, [TwoExchangeNeighborhood(problem)])
+vnd = VND(problem, [TwoExchangeNeighborhood(problem)])
 
-# b = vnd.variable_neighborhood_descent(a)
+b = vnd.variable_neighborhood_descent(a)
 
-# print(f"AVANT/APRÈS : {a.value()}/{b.value()}")
+print(f"AVANT/APRÈS : {a.value()}/{b.value()}")
+
+Solution2file(problem, b.planning, )
 
 # print("B")
 # a.generate_solution()
