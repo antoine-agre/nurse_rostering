@@ -63,37 +63,49 @@ INSTANCES_A_TESTER: int = 5 # tester les instances 1 à n
 
 test_datetime = datetime.now()
 folder_name = test_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+relative_path = f"./nurse_rostering/examples/solutions/{folder_name}/"
+mkdir_p(relative_path)
 
-for instance in range(1, INSTANCES_A_TESTER + 1):
-        print(f"Instance {instance}")
-
-        # importation du problème
-        problem: Problem = Importer().import_problem(f"Instance{instance}.txt")
-
-        # génération de la solution initiale
-        print(f"\tGénération d'une solution initiale :")
-        start_time = perf_counter()
-        solution: Solution = Solution.from_problem(problem)
-        end_time = perf_counter()
+with open(f"{relative_path}log.csv", 'x') as log:
         
-        print(f"\tTemps de génération d'une solution initiale : {end_time - start_time} s")
+        log.write("instance,initial value,final value,generation time,VND time\n")
 
-        # VND   
-        neighborhoods: List[Neighborhood] = [TwoExchangeNeighborhood(problem)]
-        vnd: VND = VND(problem, neighborhoods)
+        for instance in range(1, INSTANCES_A_TESTER + 1):
+                print(f"Instance {instance}")
 
-        start_time = perf_counter()
-        solution = vnd.variable_neighborhood_descent(solution, TEMPS_MAX_PAR_INSTANCE)
-        end_time = perf_counter()
+                # importation du problème
+                problem: Problem = Importer().import_problem(f"Instance{instance}.txt")
 
-        print(f"\tTemps d'exécution du VND : {end_time - start_time} s")
+                # génération de la solution initiale
+                print(f"\tGénération d'une solution initiale :")
+                start_time = perf_counter()
+                solution: Solution = Solution.from_problem(problem)
+                end_time = perf_counter()
 
-        # export de la solution
-        s2f = Solution2file(problem, solution, info_provider(solution))
-        mkdir_p(f"./nurse_rostering/examples/solutions/{folder_name}")
-        s2f.generate_rosterFile(f"./nurse_rostering/examples/solutions/{folder_name}/")
+                initial_value: int = solution.value()
+                initial_time: float = end_time - start_time
+                print(f"\tTemps de génération d'une solution initiale : {initial_time} s")
 
-        print(f"\tSolution exportée dans le répertoire nurse_rostering/examples/solutions/{folder_name}/\n")
+                # VND   
+                neighborhoods: List[Neighborhood] = [TwoExchangeNeighborhood(problem)]
+                vnd: VND = VND(problem, neighborhoods)
+
+                start_time = perf_counter()
+                solution = vnd.variable_neighborhood_descent(solution, TEMPS_MAX_PAR_INSTANCE)
+                end_time = perf_counter()
+
+                vnd_value: int = solution.value()
+                vnd_time: float = end_time - start_time
+                print(f"\tTemps d'exécution du VND : {vnd_time} s")
+
+                # export de la solution
+                s2f = Solution2file(problem, solution, info_provider(solution))
+                s2f.generate_rosterFile(relative_path)
+
+                # log
+                log.write(f"Instance{instance},{initial_value},{vnd_value},{initial_time},{vnd_time}\n")
+
+                print(f"\tSolution exportée dans le répertoire {relative_path}\n")
 
 
 # problem = Importer().import_problem("Instance8.txt")
