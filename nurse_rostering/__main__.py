@@ -30,7 +30,7 @@ def info_provider(solution: Solution):
 
 ###
 
-problem = Importer().import_problem("Instance2.txt")
+problem = Importer().import_problem("Instance4.txt")
 print(problem)
 a = Solution.from_problem(problem)
 

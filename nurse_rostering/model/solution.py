@@ -17,20 +17,21 @@ class Solution:
     # planning[staff][jour] == int
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
-    def __init__(self, planning: Planning, problem: Problem, path_to_problem: str) -> None:
+    def __init__(self, planning: Planning, problem: Problem, path_to_problem: str, cpu_time: float = -1.0) -> None:
         self.planning: Planning = planning
         self.problem: Problem = problem
         self.path_to_problem: str = path_to_problem
-        self.cpu_time: int = -1
-        self.generate_solution()
+        self.cpu_time: float = cpu_time
     
     def deep_copy(self):
-        return Solution(deepcopy(self.planning), self.problem, self.path_to_problem)
+        return Solution(deepcopy(self.planning), self.problem, self.path_to_problem, self.cpu_time)
 
     @classmethod
     def from_problem(cls, problem: Problem):
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
-        return cls(planning, problem, problem.path_to_problem)
+        solution: Solution = cls(planning, problem, problem.path_to_problem)
+        solution.generate_solution()
+        return solution
     
     def is_feasible(self)-> bool:
         """Indicates wether the solution's hard constraints are respected."""
@@ -83,7 +84,7 @@ class Solution:
 
     def generate_solution(self) -> None:
 
-        start_cpu_time = time.process_time()
+        start_cpu_time = time.perf_counter()
 
         # Empirical bound, to experiment with
         max_tries = 100 * self.problem.days_count
@@ -134,63 +135,66 @@ class Solution:
                     # print("worktime :", worktime, ", max :", staff.max_worktime)
             
             self.planning[staff_int] = schedule
-        # print()
+        
+        end_cpu_time = time.perf_counter()
+        print("CHANGED CPU_TIME")
+        self.cpu_time = end_cpu_time - start_cpu_time
 
             
 
-    def greedy_initialize(self)-> None:
+    # def greedy_initialize(self)-> None:
         
-        start_cpu_time = time.process_time()
+    #     start_cpu_time = time.process_time()
 
-        while not self.is_feasible():
+    #     while not self.is_feasible():
 
-            print("\tloop")
+    #         print("\tloop")
 
-            staff_ints = [i for i in range(len(self.problem.staff))]
-            staff_order = []
-            while len(staff_ints) > 0:
-                staff_order.append(staff_ints.pop(randrange(len(staff_ints))))
+    #         staff_ints = [i for i in range(len(self.problem.staff))]
+    #         staff_order = []
+    #         while len(staff_ints) > 0:
+    #             staff_order.append(staff_ints.pop(randrange(len(staff_ints))))
 
-            for staff_int in staff_order:
-                print("\r", staff_order.index(staff_int), "/", len(staff_order), end="")
-                staff: Staff = self.problem.staff[staff_int]
-                schedule: Optional[PersonnalSchedule] = self.planning[staff_int].copy()
-                conditions = False
+    #         for staff_int in staff_order:
+    #             print("\r", staff_order.index(staff_int), "/", len(staff_order), end="")
+    #             staff: Staff = self.problem.staff[staff_int]
+    #             schedule: Optional[PersonnalSchedule] = self.planning[staff_int].copy()
+    #             conditions = False
                 
-                # (days off are None, days worked are set as -1)
+    #             # (days off are None, days worked are set as -1)
 
-                count = 0
+    #             count = 0
 
-                while conditions != True:
-                    # SetDaysOff()
-                    schedule = set_days_off(self.problem, staff, schedule)
+    #             while conditions != True:
+    #                 # SetDaysOff()
+    #                 schedule = set_days_off(self.problem, staff, schedule)
 
-                    # AssignWorkDays()
-                    schedule = assign_work_days(staff, schedule)
+    #                 # AssignWorkDays()
+    #                 schedule = assign_work_days(staff, schedule)
 
-                    # TODO evaluate weekends ?
+    #                 # TODO evaluate weekends ?
 
-                    #AssignShifts()
-                    while -1 in schedule:
-                        # print("count")
-                        schedule = assign_shifts(self.problem, staff, schedule)
-                        count += 1
-                        if count > 100:
-                            break
-                    if count > 100:
-                        break
+    #                 #AssignShifts()
+    #                 while -1 in schedule:
+    #                     # print("count")
+    #                     schedule = assign_shifts(self.problem, staff, schedule)
+    #                     count += 1
+    #                     if count > 100:
+    #                         break
+    #                 if count > 100:
+    #                     break
 
-                    # print(f"[{staff_int}]", schedule)
-                    conditions = evaluate_weekend(staff, schedule) and evaluate_workload(self.problem, staff, schedule)
+    #                 # print(f"[{staff_int}]", schedule)
+    #                 conditions = evaluate_weekend(staff, schedule) and evaluate_workload(self.problem, staff, schedule)
                 
-                if count > 100:
-                    # count = 0
-                    break
+    #             if count > 100:
+    #                 # count = 0
+    #                 break
 
-                # if schedule == None: break
-                self.planning[staff_int] = schedule
-        end_cpu_time = time.process_time()
-        self.cpu_time = end_cpu_time - start_cpu_time
+    #             # if schedule == None: break
+    #             self.planning[staff_int] = schedule
+    #     end_cpu_time = time.process_time()
+    #     self.cpu_time = end_cpu_time - start_cpu_time
             
 
 def is_personal_schedule_feasible(schedule: PersonnalSchedule, 
