@@ -3,6 +3,7 @@ from nurse_rostering.io.importer import Importer
 from typing import List, Union, Optional, Any
 from random import random, randint, randrange
 from copy import deepcopy
+from math import inf
 
 # None = day off, int = shift
 Planning = List[List[Optional[int]]]
@@ -84,7 +85,7 @@ class Solution:
         max_tries = 100 * self.problem.days_count
 
         for staff_int in range(len(self.problem.staff)):
-            # print(f"\r{staff_int+1}/{len(self.problem.staff)}")
+            print(f"\r{staff_int+1}/{len(self.problem.staff)}")
 
 
             schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
@@ -111,7 +112,21 @@ class Solution:
                     loops += 1
                     if loops > max_tries:
                         break
-                # print(schedule)
+                
+                # Reduce work days until worktime below maximum
+                # target_worktime = (staff.max_worktime - staff.min_worktime) / 2
+                # average_shift_duration = sum([shift_type.duration for shift_type in self.problem.shift_types]) / len(self.problem.shift_types)
+                # target_num_of_shifts = target_worktime / average_shift_duration
+                
+                def get_worktime(schedule): return sum([self.problem.shift_types[d].duration for d in schedule if d != None])
+                
+                worktime = get_worktime(schedule)
+                while worktime > staff.max_worktime:
+                    # schedule = _remove_smallest_work_block(schedule)
+                    schedule[randrange(len(schedule))] = None
+                    # print(schedule)
+                    worktime = get_worktime(schedule)
+                    # print("worktime :", worktime, ", max :", staff.max_worktime)
             
             self.planning[staff_int] = schedule
 
@@ -220,7 +235,7 @@ def is_personal_schedule_feasible(schedule: PersonnalSchedule,
             count += 1
         
         if content_type == type(None) and count < staff.min_consecutive_rest_days:
-            # print("min consecutive rest days")
+            print("min consecutive rest days")
             return False
         elif count < staff.min_consecutive_shifts or count > staff.max_consecutive_shifts:
             # print("content :", content_type, "count :", count)
