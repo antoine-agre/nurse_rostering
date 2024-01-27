@@ -1,6 +1,8 @@
 from nurse_rostering.model.solution import Solution
 from nurse_rostering.io.export_solution import Solution2file
 from nurse_rostering.io.importer import Importer
+from nurse_rostering.Solution.VND_Algo import VND
+from nurse_rostering.model.neighborhood import TwoExchangeNeighborhood
 from datetime import datetime
 
 def info_provider(solution):
@@ -28,7 +30,7 @@ def info_provider(solution):
 
 ###
 
-problem = Importer().import_problem("Instance3.txt")
+problem = Importer().import_problem("nurse_rostering/examples/Instance3.txt")
 print(problem)
 a = Solution.from_problem(problem)
 

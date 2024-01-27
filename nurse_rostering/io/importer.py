@@ -161,7 +161,7 @@ def _parse_cover(problem: Problem, tokens: List[str]) -> None:
 
 if __name__ == "__main__":
     importer = Importer()
-    problem = importer.import_problem("Instance1.txt")
+    problem = importer.import_problem("Instance3.txt")
 
     print(problem.days_count)
     for shift_type in problem.shift_types:

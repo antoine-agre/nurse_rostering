@@ -2,7 +2,10 @@ from nurse_rostering.model.problem import Problem, Staff, ShiftType
 from nurse_rostering.io.importer import Importer
 from typing import List, Union, Optional, Any
 from random import random, randint, randrange
+from copy import deepcopy
+from math import inf
 import time
+
 # None = day off, int = shift
 Planning = List[List[Optional[int]]]
 PersonnalSchedule = List[Optional[int]]
@@ -15,118 +18,40 @@ class Solution:
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
     def __init__(self, planning: Planning, problem: Problem) -> None:
-
+        self.planning: Planning = planning
+        self.problem: Problem = problem
         self.pathTowardsProblem: str= ""
         self.cpu_time: int = 0
-        self.planning = planning
-        # self.problem: Problem = problem
-        self.greedy_initialize(problem)
+        self.generate_solution()
     
+    def deep_copy(self):
+        return Solution(deepcopy(self.planning), self.problem)
+
     @classmethod
     def from_problem(cls, problem: Problem):
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
         return cls(planning, problem)
     
-    def is_feasible(self, problem: Problem)-> bool:
+    def is_feasible(self)-> bool:
         """Indicates wether the solution's hard constraints are respected."""
 
-        # Check -1 values
-        for schedule in self.planning:
-            for day in schedule:
-                if day == -1:
-                    return False
-
-        # Blocking shifts
-        for schedule in self.planning:
-            for d in range(1, len(schedule)):
-                current_shift = schedule[d]
-                previous_shift = schedule[d - 1]
-                if current_shift != None and previous_shift != None:
-                    if current_shift in problem.shift_types[previous_shift].blocked_shift_types:
-                        # print("Blocking shifts")
-                        return False
-            
-        # Max shift
-        for staff_int in range(len(self.planning)):
-            schedule = self.planning[staff_int]
-            max_shift_days = problem.staff[staff_int].max_shift_days
-            shift_count = [0 for _ in range(len(max_shift_days))]
-            for day in schedule:
-                if day != None:
-                    shift_count[day] += 1
-            for i in range(len(shift_count)):
-                if shift_count[i] > max_shift_days[i]:
-                    # print("Max shifts")
-                    return False
-        
-        # Maximum and minimum minutes worked
-        for staff_int in range(len(self.planning)):
-            schedule = self.planning[staff_int]
-            minutes = 0
-            for day in schedule:
-                if day != None:
-                    minutes += problem.shift_types[day].duration
-            staff = problem.staff[staff_int]
-            if minutes > staff.max_worktime or minutes < staff.min_worktime:
-                # print("max/min minutes worked")
+        for staff_int in range(len(self.problem.staff)):
+            schedule: PersonnalSchedule = self.planning[staff_int]
+            if is_personal_schedule_feasible(schedule, self.problem, staff_int) == False:
                 return False
         
-        # Max/min consecutive shifts and min consecutive days off
-        for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
-            schedule = self.planning[staff_int].copy()
-            while len(schedule) > 0:
-                content_type = type(schedule.pop(0))
-                count = 1
-                while len(schedule) > 0 and type(schedule[0]) == content_type:
-                    schedule.pop(0)
-                    count += 1
-                
-                if content_type == type(None):
-                    if count < staff.min_consecutive_rest_days:
-                        # print("min consecutive rest days")
-                        return False
-                else:
-                    if count < staff.min_consecutive_shifts or count > staff.max_consecutive_shifts:
-                        # print("content :", content_type, "count :", count)
-                        # print(f"[staff {staff_int}] max/min consecutive shifts")
-                        return False
-        
-        # Max number of weekends
-        for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
-            schedule = self.planning[staff_int]
-            max_weekends = staff.max_worked_weekends
-            weekends = []
-            for i in range(len(schedule)//7):
-                weekends.append((schedule[7*i+5], schedule[7*i+6]))
-            for weekend in weekends:
-                if weekend[0] != None or weekend[1] != None:
-                    max_weekends -= 1
-            if max_weekends < 0:
-                # print("max weekends worked")
-                return False
-        
-        # Requested days off
-        for staff_int in range(len(self.planning)):
-            staff = problem.staff[staff_int]
-            schedule = self.planning[staff_int]
-            for rest_day in staff.rest_days:
-                if schedule[rest_day] != None:
-                    # print("requested days off")
-                    return False
-
         return True
-    
-    def value(self,problem : Problem):
+
+    def value(self):
+        """Evaluates and returns the value of the solution."""
         
         cover_abovePenality = 0
         cover_belowPenality = 0
         shift_avoidedPenality = 0
         shift_wishedPenality = 0
 
-        staff = problem.staff
-        shift_types = problem.shift_types
+        staff = self.problem.staff
+        shift_types = self.problem.shift_types
         planning = self.planning
         
         #penality about staff requirements
@@ -141,7 +66,7 @@ class Solution:
         
         # Section Request
         for i_employee in range(len(staff)):
-            for i_day in range(problem.days_count):
+            for i_day in range(self.problem.days_count):
                 for i_shift in range(len(shift_types)):
 
                     # penality for shifts off requests 
@@ -156,22 +81,77 @@ class Solution:
         
         return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
 
-    def greedy_initialize(self, problem: Problem)-> None:
+    def generate_solution(self) -> None:
+
+        # Empirical bound, to experiment with
+        max_tries = 100 * self.problem.days_count
+        # print("Génération d'un solution initiale :")
+
+        for staff_int in range(len(self.problem.staff)):
+            # print(f"\r{staff_int+1}/{len(self.problem.staff)} staff", end="")
+
+
+            schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
+            staff: Staff = self.problem.staff[staff_int]
+            
+            while not is_personal_schedule_feasible(schedule, self.problem, staff_int):
+                schedule = deepcopy(self.planning[staff_int])
+
+                schedule = set_days_off(self.problem, staff, schedule)
+                schedule = assign_work_days(staff, schedule)
+                # print(schedule)
+                
+                # Randomly assign shifts
+                available_shifts = staff.max_shift_days.copy()
+                # print(available_shifts)
+
+                loops = 0
+                while -1 in schedule:
+                    day = randrange(len(schedule))
+                    shift = randrange(len(available_shifts))
+                    if available_shifts[shift] > 0 and schedule[day] == -1:
+                        available_shifts[shift] -= 1
+                        schedule[day] = shift
+                    loops += 1
+                    if loops > max_tries:
+                        break
+                
+                # Reduce work days until worktime below maximum
+                # target_worktime = (staff.max_worktime - staff.min_worktime) / 2
+                # average_shift_duration = sum([shift_type.duration for shift_type in self.problem.shift_types]) / len(self.problem.shift_types)
+                # target_num_of_shifts = target_worktime / average_shift_duration
+                
+                def get_worktime(schedule): return sum([self.problem.shift_types[d].duration for d in schedule if d != None])
+                
+                worktime = get_worktime(schedule)
+                while worktime > staff.max_worktime:
+                    # schedule = _remove_smallest_work_block(schedule)
+                    schedule[randrange(len(schedule))] = None
+                    # print(schedule)
+                    worktime = get_worktime(schedule)
+                    # print("worktime :", worktime, ", max :", staff.max_worktime)
+            
+            self.planning[staff_int] = schedule
+        # print()
+
+            
+
+    def greedy_initialize(self)-> None:
         
         start_cpu_time = time.process_time()
 
-        while not self.is_feasible(problem):
+        while not self.is_feasible():
 
             print("\tloop")
 
-            staff_ints = [i for i in range(len(problem.staff))]
+            staff_ints = [i for i in range(len(self.problem.staff))]
             staff_order = []
             while len(staff_ints) > 0:
                 staff_order.append(staff_ints.pop(randrange(len(staff_ints))))
 
             for staff_int in staff_order:
                 print("\r", staff_order.index(staff_int), "/", len(staff_order), end="")
-                staff: Staff = problem.staff[staff_int]
+                staff: Staff = self.problem.staff[staff_int]
                 schedule: Optional[PersonnalSchedule] = self.planning[staff_int].copy()
                 conditions = False
                 
@@ -181,7 +161,7 @@ class Solution:
 
                 while conditions != True:
                     # SetDaysOff()
-                    schedule = set_days_off(problem, staff, schedule)
+                    schedule = set_days_off(self.problem, staff, schedule)
 
                     # AssignWorkDays()
                     schedule = assign_work_days(staff, schedule)
@@ -191,7 +171,7 @@ class Solution:
                     #AssignShifts()
                     while -1 in schedule:
                         # print("count")
-                        schedule = assign_shifts(problem, staff, schedule)
+                        schedule = assign_shifts(self.problem, staff, schedule)
                         count += 1
                         if count > 100:
                             break
@@ -199,7 +179,7 @@ class Solution:
                         break
 
                     # print(f"[{staff_int}]", schedule)
-                    conditions = evaluate_weekend(staff, schedule) and evaluate_workload(problem, staff, schedule)
+                    conditions = evaluate_weekend(staff, schedule) and evaluate_workload(self.problem, staff, schedule)
                 
                 if count > 100:
                     # count = 0
@@ -210,10 +190,92 @@ class Solution:
         end_cpu_time = time.process_time()
         self.cpu_time = end_cpu_time - start_cpu_time
             
+
+def is_personal_schedule_feasible(schedule: PersonnalSchedule, 
+                                  problem: Problem, staff_int: int) -> bool:
+    """Indicates wether the personal schedule's hard constraints are respected."""
     
+    # Variables
+    staff: Staff = problem.staff[staff_int]
+
+    # Check -1 values
+    for day in schedule:
+        if day == -1:
+            return False
+
+    # Blocking shifts
+    for d in range(1, len(schedule)):
+        current_shift = schedule[d]
+        previous_shift = schedule[d - 1]
+        if current_shift != None and previous_shift != None:
+            if current_shift in problem.shift_types[previous_shift].blocked_shift_types:
+                # print("Blocking shifts")
+                return False
+        
+    # Max shift
+    max_shift_days = staff.max_shift_days
+    shift_count = [0 for _ in range(len(max_shift_days))]
+    for day in schedule:
+        if day != None:
+            shift_count[day] += 1
+    for i in range(len(shift_count)):
+        if shift_count[i] > max_shift_days[i]:
+            # print("Max shifts")
+            return False
+    
+    # Maximum and minimum minutes worked
+    minutes = 0
+    for day in schedule:
+        if day != None:
+            minutes += problem.shift_types[day].duration
+    if minutes > staff.max_worktime or minutes < staff.min_worktime:
+        # print("max/min minutes worked")
+        return False
+    
+    # Max/min consecutive shifts and min consecutive days off
+    schedule_copy = deepcopy(schedule)
+
+    while len(schedule_copy) > 0:
+        content_type = type(schedule_copy.pop(0))
+        count = 1
+        while len(schedule_copy) > 0 and type(schedule_copy[0]) == content_type:
+            schedule_copy.pop(0)
+            count += 1
+        
+        if content_type == type(None) and count < staff.min_consecutive_rest_days:
+            # print("min consecutive rest days")
+            return False
+        elif count < staff.min_consecutive_shifts or count > staff.max_consecutive_shifts:
+            # print("content :", content_type, "count :", count)
+            # print(f"[staff {staff_int}] max/min consecutive shifts")
+            return False
+    
+    # Max number of weekends
+    max_weekends = staff.max_worked_weekends
+    weekends = []
+    for i in range(len(schedule)//7):
+        weekends.append((schedule[7*i+5], schedule[7*i+6]))
+    for weekend in weekends:
+        if weekend[0] != None or weekend[1] != None:
+            max_weekends -= 1
+    if max_weekends < 0:
+        # print("max weekends worked")
+        return False
+    
+    # Requested days off
+    for rest_day in staff.rest_days:
+        if schedule[rest_day] != None:
+            # print("requested days off")
+            return False
+
+    return True
+
+
 def set_days_off(problem: Problem, staff: Staff, schedule: PersonnalSchedule) -> PersonnalSchedule:
     for d in range(problem.days_count):
-        if d not in staff.rest_days:
+        if d in staff.rest_days:
+            schedule[d] = None
+        else:
             schedule[d] = -1
     return schedule
 
@@ -241,8 +303,8 @@ def assign_work_days(staff: Staff, schedule: PersonnalSchedule) -> PersonnalSche
     
     return schedule
 
-# Replace worked day blocks below minimum size by rest days
 def _fix_min_work_days(schedule: PersonnalSchedule, min_shifts: int) -> PersonnalSchedule:
+    """Replace worked day blocks below minimum size by rest days."""
     start: Any = None
     end: Any = None
     for i in range(len(schedule)):
@@ -258,8 +320,8 @@ def _fix_min_work_days(schedule: PersonnalSchedule, min_shifts: int) -> Personna
                 start, end = None, None
     return schedule
 
-# Randomly extend off day blocks below minimum size
 def _fix_min_off_days(schedule: PersonnalSchedule, min_off_days: int) -> PersonnalSchedule:
+    """Randomly extend off day blocks below minimum size."""
     start, end = None, None
     for i in range(len(schedule)):
         if start == None:
@@ -282,8 +344,8 @@ def _fix_min_off_days(schedule: PersonnalSchedule, min_off_days: int) -> Personn
                 start, end = None, None
     return schedule
 
-# Randomly add off days to work day blocks above max size
 def _fix_max_work_days(schedule: PersonnalSchedule, max_shifts: int, min_shifts: int, min_off_days: int) -> PersonnalSchedule:
+    """Randomly add off days to work day blocks above max size."""
     start: Any = None
     end: Any = None
     for i in range(len(schedule)):
@@ -308,8 +370,8 @@ def _fix_max_work_days(schedule: PersonnalSchedule, max_shifts: int, min_shifts:
                 start, end = None, None
     return schedule
 
-# Returns true if work days constraints are followed
 def _check_work_days_constraints(schedule: PersonnalSchedule, max_shifts: int, min_shifts: int, min_off_days: int) -> bool:
+    """Returns true if work days constraints are followed."""
     s = schedule.copy()
     while len(s) > 0:
         length: int = 0
@@ -415,6 +477,7 @@ def evaluate_weekend(staff: Staff, schedule: PersonnalSchedule) -> bool:
 if __name__ == "__main__":
 
     problem: Problem = Importer().import_problem("Instance2.txt")
+    problem: Problem = Importer().import_problem("Instance1.txt")
     # sol: Solution = Solution(problem)
     # print(sol.planning)
 
@@ -422,7 +485,7 @@ if __name__ == "__main__":
     a = Solution.from_problem(problem)
     # a.greedy_initialize(problem)
     print(a.planning)
-    print("FEASIBLE :", a.is_feasible(problem))
+    print("FEASIBLE :", a.is_feasible())
 
     # test = [-1, None,-1, -1, None, None, None, -1, -1, -1, -1, -1, -1, -1, None, -1, -1, None, -1, -1, None, None, -1]
     # test = [(None if random() > 0.9 else -1) for _ in range(365)]
