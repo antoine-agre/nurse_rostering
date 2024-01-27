@@ -45,7 +45,7 @@ class Solution2file:
         # element.text = self.info[0][1]
 
         for item in self.info:
-            print("item :", item)
+            # print("item :", item)
             element = ET.SubElement(roster,item[0])
             element.text = item[1]
         
@@ -74,9 +74,9 @@ class Solution2file:
         #save file
         penality  = self.info[1][1]
         solutionFilename : str = f"{findFilenameWithoutExtension(self.info[0][1])}.solution.{penality}.ros"
-        print("solutionFilename :", solutionFilename)
+        # print("solutionFilename :", solutionFilename)
         solutionPath = baseFolder+solutionFilename
-        print("solutionPath :", solutionPath)
+        # print("solutionPath :", solutionPath)
         fileProvider.write(solutionPath,encoding="UTF-8",xml_declaration= True)
 
         

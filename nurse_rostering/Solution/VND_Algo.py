@@ -15,6 +15,7 @@ class VND:
 
     def variable_neighborhood_descent(self, initial_solution: Solution, max_time: float = 300):
         """Fonction de l'algorithme VND."""
+        print("\tValeur des solutions trouvées par VND :")
 
         # Initialisation de la liste pour stocker les solutions
         # all_solutions = []
@@ -31,7 +32,7 @@ class VND:
             if new_eval < best_eval:
                 best_solution = new_solution
                 best_eval = new_eval
-                print(best_eval)
+                print(f"\t\t{best_eval}")
                 k = 0
             else:
                 k += 1

@@ -91,7 +91,7 @@ class Solution:
         # print("Génération d'un solution initiale :")
 
         for staff_int in range(len(self.problem.staff)):
-            # print(f"\r{staff_int+1}/{len(self.problem.staff)} staff", end="")
+            print(f"\r\t\t{staff_int+1}/{len(self.problem.staff)} staff", end="")
 
 
             schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
@@ -137,7 +137,7 @@ class Solution:
             self.planning[staff_int] = schedule
         
         end_cpu_time = time.perf_counter()
-        print("CHANGED CPU_TIME")
+        # print("CHANGED CPU_TIME")
         self.cpu_time = end_cpu_time - start_cpu_time
 
             

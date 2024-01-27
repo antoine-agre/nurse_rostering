@@ -106,8 +106,8 @@ class Problem:
     def __str__(self) -> str:
         out = ""
         for i, shift_type in enumerate(self.shift_types):
-            out += f"➡️ {shift_type}\n"
+            out += f"=> {shift_type}\n"
             # out += self.shift_types[i].id + " " + shift_type
         for i, staff in enumerate(self.staff):
-            out += f"➡️ {staff}\n"
+            out += f"=> {staff}\n"
         return out
