@@ -17,20 +17,20 @@ class Solution:
     # planning[staff][jour] == int
     # self.planning: list[list[int]] #planning[staff][jour] = int de shift ou None
 
-    def __init__(self, planning: Planning, problem: Problem) -> None:
+    def __init__(self, planning: Planning, problem: Problem, path_to_problem: str) -> None:
         self.planning: Planning = planning
         self.problem: Problem = problem
-        self.pathTowardsProblem: str= ""
-        self.cpu_time: int = 0
+        self.path_to_problem: str = path_to_problem
+        self.cpu_time: int = -1
         self.generate_solution()
     
     def deep_copy(self):
-        return Solution(deepcopy(self.planning), self.problem)
+        return Solution(deepcopy(self.planning), self.problem, self.path_to_problem)
 
     @classmethod
     def from_problem(cls, problem: Problem):
         planning: Planning = [[None for _ in range(problem.days_count)] for _ in range(len(problem.staff))]
-        return cls(planning, problem)
+        return cls(planning, problem, problem.path_to_problem)
     
     def is_feasible(self)-> bool:
         """Indicates wether the solution's hard constraints are respected."""
@@ -82,6 +82,8 @@ class Solution:
         return cover_abovePenality + cover_belowPenality + shift_avoidedPenality + shift_wishedPenality
 
     def generate_solution(self) -> None:
+
+        start_cpu_time = time.process_time()
 
         # Empirical bound, to experiment with
         max_tries = 100 * self.problem.days_count

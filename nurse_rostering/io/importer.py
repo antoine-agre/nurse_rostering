@@ -26,7 +26,7 @@ class Importer:
         # Holds shift block instructions until all shifts are registered
         held_shift_blocks: Dict[int, List[str]] = {}
 
-        with open(filename) as f:
+        with open(f"nurse_rostering/examples/instances/{filename}") as f:
             for i, line in enumerate(f):
 
 
@@ -55,7 +55,7 @@ class Importer:
 
                     match current_section:
                         case Importer.Section.HORIZON:
-                            problem = Problem(int(tokens[0]))
+                            problem = Problem(int(tokens[0]), filename)
                             # print(f"nouveau problème de {problem.days_count} jours")
                         case Importer.Section.SHIFTS:
                             # Tokens

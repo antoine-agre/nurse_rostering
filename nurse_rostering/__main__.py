@@ -5,7 +5,7 @@ from nurse_rostering.Solution.VND_Algo import VND
 from nurse_rostering.model.neighborhood import TwoExchangeNeighborhood
 from datetime import datetime
 
-def info_provider(solution):
+def info_provider(solution: Solution):
 
         # date du jouts
         date_heure_actuelles = datetime.now()
@@ -19,8 +19,8 @@ def info_provider(solution):
         cpu_time = "{:02} Heures {:02} minutes {:02} secondes".format(int(cpu_hours), int(cpu_minutes), int(cpu_seconds))
 
         informations = [
-                        ("SchedulingPeriodFile", f"{solution.pathTowardsProblem}"),
-                        ("Penality",f"{solution.value()}"),                 
+                        ("SchedulingPeriodFile", f"../instances/{solution.path_to_problem[:-4]}.ros"),
+                        ("Penalty",f"{solution.value()}"),
                         ("DateFound",date),
                         ("FoundBy",authors),
                         ("Algorithm",algorithm),
@@ -30,7 +30,7 @@ def info_provider(solution):
 
 ###
 
-problem = Importer().import_problem("nurse_rostering/examples/Instance3.txt")
+problem = Importer().import_problem("Instance2.txt")
 print(problem)
 a = Solution.from_problem(problem)
 
@@ -38,6 +38,12 @@ print(a.planning)
 
 ##### SET THE a.pathTowardsProblem: str BEFORE RUNNING ####
 infos =  info_provider(a)
+s2f = Solution2file(problem, a, infos)
+s2f.generate_rosterFile("./nurse_rostering/examples/solutions/")
 
-s2f = Solution2file(problem, a.planning, infos)
-s2f.generate_rosterFile("nurse_rostering/examples/solutions/")
+vnd = VND(problem, [TwoExchangeNeighborhood(problem)])
+b = vnd.variable_neighborhood_descent(a)
+
+infos = info_provider(b)
+s2f = Solution2file(problem, b, infos)
+s2f.generate_rosterFile("./nurse_rostering/examples/solutions/")

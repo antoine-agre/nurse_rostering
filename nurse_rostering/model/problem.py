@@ -79,10 +79,11 @@ class ShiftType:
 
 class Problem:
 
-    def __init__(self, days_count: int):
+    def __init__(self, days_count: int, path_to_problem: str):
         self.days_count: int = days_count
         self.staff: List[Staff] = []
         self.shift_types: List[ShiftType] = []
+        self.path_to_problem: str = path_to_problem
     
     def shift_type_from_id(self, shift_id: str)-> Optional[ShiftType]:
         for shift_type in self.shift_types:

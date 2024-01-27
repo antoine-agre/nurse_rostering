@@ -48,17 +48,17 @@ class TwoExchangeNeighborhood(Neighborhood):
                 for day in range(self.problem.days_count):
 
                     #TODO : allow exchanging rest days
-                    if (first_planning[day] != None and second_planning[day] != None
-                        and first_planning[day] != second_planning[day]):
+                    if first_planning[day] != second_planning[day]:
                         
                         # print("neighbor considered !")
                         neighbor: Solution = solution.deep_copy()
                         neighbor.planning[first_staff_int][day] = second_planning[day]
                         neighbor.planning[second_staff_int][day] = first_planning[day]
                         
-                        new_value = neighbor.value()
-                        if new_value < best_value:
-                            best_value = new_value
-                            best_solution = neighbor
+                        if neighbor.is_feasible():
+                            new_value = neighbor.value()
+                            if new_value < best_value:
+                                best_value = new_value
+                                best_solution = neighbor
         
         return best_solution
