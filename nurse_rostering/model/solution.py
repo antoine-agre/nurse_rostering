@@ -138,7 +138,7 @@ class Solution:
         
         end_cpu_time = time.perf_counter()
         # print("CHANGED CPU_TIME")
-        self.cpu_time = end_cpu_time - start_cpu_time
+        # self.cpu_time = end_cpu_time - start_cpu_time
 
             
 

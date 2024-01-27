@@ -25,6 +25,7 @@ class VND:
 
         k = 0
         while k < len(self.neighborhoods):
+            print(f"\t\tNeighborhood {k + 1}")
             new_solution = self.neighborhoods[k].best_neighbor(best_solution)
             # current_eval = self.evaluate(current_solution)
             new_eval = new_solution.value()

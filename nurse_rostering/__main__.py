@@ -16,7 +16,7 @@ def info_provider(solution: Solution):
         # date du jouts
         date_heure_actuelles = datetime.now()
         date = date_heure_actuelles.strftime("%d/%m/%Y %H:%M:%S")
-        authors = "Team @Antoine-@Khaoula-@Giovanni"
+        authors = "Team @Antoine-@Khaoula-@Giovanni-@Xavier-@Guo"
         algorithm = "Variable Neighborhood Descent"
 
         # Convertissez les différences en heures, minutes et secondes
@@ -25,7 +25,7 @@ def info_provider(solution: Solution):
         cpu_time = "{:02} Heures {:02} minutes {:02} secondes".format(int(cpu_hours), int(cpu_minutes), int(cpu_seconds))
 
         informations = [
-                        ("SchedulingPeriodFile", f"../instances/{solution.path_to_problem[:-4]}.ros"),
+                        ("SchedulingPeriodFile", f"../../instances/{solution.path_to_problem[:-4]}.ros"),
                         ("Penalty",f"{solution.value()}"),
                         ("DateFound",date),
                         ("FoundBy",authors),
@@ -97,6 +97,7 @@ with open(f"{relative_path}log.csv", 'x') as log:
                 vnd_value: int = solution.value()
                 vnd_time: float = end_time - start_time
                 print(f"\tTemps d'exécution du VND : {vnd_time} s")
+                solution.cpu_time = vnd_time
 
                 # export de la solution
                 s2f = Solution2file(problem, solution, info_provider(solution))
