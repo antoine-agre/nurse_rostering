@@ -6,7 +6,10 @@ from nurse_rostering.model.neighborhood import Neighborhood, TwoExchangeNeighbor
 from nurse_rostering.model.problem import Problem
 from datetime import datetime
 from time import perf_counter
+from datetime import datetime
 from typing import List
+import os, os.path
+import errno
 
 def info_provider(solution: Solution):
 
@@ -31,6 +34,14 @@ def info_provider(solution: Solution):
         
         return informations
 
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise
+
 ###
 
 # solution initiale : 
@@ -50,7 +61,8 @@ def info_provider(solution: Solution):
 TEMPS_MAX_PAR_INSTANCE: float = 300 # en secondes
 INSTANCES_A_TESTER: int = 5 # tester les instances 1 à n
 
-# Voisinnages pour le VND
+test_datetime = datetime.now()
+folder_name = test_datetime.strftime("%Y-%m-%d_%H-%M-%S")
 
 for instance in range(1, INSTANCES_A_TESTER + 1):
         print(f"Instance {instance}")
@@ -78,9 +90,10 @@ for instance in range(1, INSTANCES_A_TESTER + 1):
 
         # export de la solution
         s2f = Solution2file(problem, solution, info_provider(solution))
-        s2f.generate_rosterFile("./nurse_rostering/examples/solutions/")
+        mkdir_p(f"./nurse_rostering/examples/solutions/{folder_name}")
+        s2f.generate_rosterFile(f"./nurse_rostering/examples/solutions/{folder_name}/")
 
-        print("\tSolution exportée dans le répertoire nurse_rostering/examples/solutions/\n")
+        print(f"\tSolution exportée dans le répertoire nurse_rostering/examples/solutions/{folder_name}/\n")
 
 
 # problem = Importer().import_problem("Instance8.txt")
