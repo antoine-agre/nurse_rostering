@@ -1,9 +1,10 @@
 from nurse_rostering.model.solution import Solution
 from nurse_rostering.io.export_solution import Solution2file
 from nurse_rostering.io.importer import Importer
-from nurse_rostering.Solution.VND_Algo import VND
+from nurse_rostering.solution.VND_Algo import VND
 from nurse_rostering.model.neighborhood import TwoExchangeNeighborhood
 from datetime import datetime
+from time import perf_counter
 
 def info_provider(solution: Solution):
 
@@ -42,7 +43,12 @@ s2f = Solution2file(problem, a, infos)
 s2f.generate_rosterFile("./nurse_rostering/examples/solutions/")
 
 vnd = VND(problem, [TwoExchangeNeighborhood(problem)])
+start_time = perf_counter()
 b = vnd.variable_neighborhood_descent(a)
+end_time = perf_counter()
+
+print("ELAPSED TIME :", end_time - start_time)
+b.cpu_time = end_time - start_time
 
 infos = info_provider(b)
 s2f = Solution2file(problem, b, infos)
