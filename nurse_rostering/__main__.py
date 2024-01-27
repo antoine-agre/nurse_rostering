@@ -2,7 +2,7 @@ from nurse_rostering.model.solution import Solution
 from nurse_rostering.io.export_solution import Solution2file
 from nurse_rostering.io.importer import Importer
 from nurse_rostering.solution.VND_Algo import VND
-from nurse_rostering.model.neighborhood import Neighborhood, TwoExchangeNeighborhood
+from nurse_rostering.model.neighborhood import Neighborhood, TwoExchangeNeighborhood, BlockExchangeNeighborhood
 from nurse_rostering.model.problem import Problem
 from datetime import datetime
 from time import perf_counter
@@ -42,21 +42,8 @@ def mkdir_p(path):
             pass
         else: raise
 
-###
 
-# solution initiale : 
-# rapide pour 1-4
-# quelques secondes pour 5
-# bloqué ou trop de temps pour >= 6
-
-# constantes : temps max, nombre d'instances à tester
-# boucle pour toutes les instances à tester ()
-        # importer, générer solution initiale + sauvegarder temps d'exécution et valeur
-        # faire passer par le VND + sauvegarder temps d'exécution et valeur
-        # exporter
-
-
-### Tests sur les instances
+### Tests sur les instances ###
 
 TEMPS_MAX_PAR_INSTANCE: float = 300 # en secondes
 INSTANCES_A_TESTER: int = 5 # tester les instances 1 à n
@@ -87,7 +74,7 @@ with open(f"{relative_path}log.csv", 'x') as log:
                 print(f"\tTemps de génération d'une solution initiale : {initial_time} s")
 
                 # VND   
-                neighborhoods: List[Neighborhood] = [TwoExchangeNeighborhood(problem)]
+                neighborhoods: List[Neighborhood] = [TwoExchangeNeighborhood(problem), BlockExchangeNeighborhood(problem)]
                 vnd: VND = VND(problem, neighborhoods)
 
                 start_time = perf_counter()

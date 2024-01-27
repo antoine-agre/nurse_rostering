@@ -38,8 +38,6 @@ class TwoExchangeNeighborhood(Neighborhood):
         # For all staff pairs
         for first_staff_int in range(len(self.problem.staff)):
             for second_staff_int in range(first_staff_int + 1, len(self.problem.staff)):
-
-                # print(f"{first_staff_int}/{second_staff_int}")
                 
                 first_planning = solution.planning[first_staff_int]
                 second_planning = solution.planning[second_staff_int]
@@ -47,13 +45,47 @@ class TwoExchangeNeighborhood(Neighborhood):
                 # For all days
                 for day in range(self.problem.days_count):
 
-                    #TODO : allow exchanging rest days
                     if first_planning[day] != second_planning[day]:
                         
-                        # print("neighbor considered !")
                         neighbor: Solution = solution.deep_copy()
                         neighbor.planning[first_staff_int][day] = second_planning[day]
                         neighbor.planning[second_staff_int][day] = first_planning[day]
+                        
+                        if neighbor.is_feasible():
+                            new_value = neighbor.value()
+                            if new_value < best_value:
+                                best_value = new_value
+                                best_solution = neighbor
+        
+        return best_solution
+
+class BlockExchangeNeighborhood(Neighborhood):
+    """This neighborhood includes all moves where a
+    specific number of consecutive shifts is swapped between two
+    different nurses within the planning period."""
+
+    def __init__(self, problem: Problem) -> None:
+        super().__init__(problem)
+    
+    def best_neighbor(self, solution: Solution) -> Solution:
+        # Variables
+        best_solution: Solution = solution
+        best_value: int = solution.value()
+
+        # For all staff pairs
+        for first_staff_int in range(len(self.problem.staff)):
+            for second_staff_int in range(first_staff_int + 1, len(self.problem.staff)):
+                
+                first_planning = solution.planning[first_staff_int]
+                second_planning = solution.planning[second_staff_int]
+
+                # For all day pairs
+                for first_day in range(self.problem.days_count):
+                    for second_day in range(first_day + 1, self.problem.days_count):
+
+                        neighbor: Solution = solution.deep_copy()
+                        neighbor.planning[first_staff_int][first_day:second_day + 1] = second_planning[first_day:second_day + 1]
+                        neighbor.planning[second_staff_int][first_day:second_day + 1] = first_planning[first_day:second_day + 1]
                         
                         if neighbor.is_feasible():
                             new_value = neighbor.value()
