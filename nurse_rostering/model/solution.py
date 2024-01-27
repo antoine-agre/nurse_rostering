@@ -4,6 +4,7 @@ from typing import List, Union, Optional, Any
 from random import random, randint, randrange
 from copy import deepcopy
 from math import inf
+import time
 
 # None = day off, int = shift
 Planning = List[List[Optional[int]]]
@@ -19,7 +20,8 @@ class Solution:
     def __init__(self, planning: Planning, problem: Problem) -> None:
         self.planning: Planning = planning
         self.problem: Problem = problem
-        # self.greedy_initialize()
+        self.pathTowardsProblem: str= ""
+        self.cpu_time: int = 0
         self.generate_solution()
     
     def deep_copy(self):
@@ -136,6 +138,8 @@ class Solution:
 
     def greedy_initialize(self)-> None:
         
+        start_cpu_time = time.process_time()
+
         while not self.is_feasible():
 
             print("\tloop")
@@ -183,6 +187,8 @@ class Solution:
 
                 # if schedule == None: break
                 self.planning[staff_int] = schedule
+        end_cpu_time = time.process_time()
+        self.cpu_time = end_cpu_time - start_cpu_time
             
 
 def is_personal_schedule_feasible(schedule: PersonnalSchedule, 
@@ -465,6 +471,7 @@ def evaluate_weekend(staff: Staff, schedule: PersonnalSchedule) -> bool:
             max_worked_weekends -= 1
     
     return max_worked_weekends >= 0
+
 
 
 if __name__ == "__main__":
