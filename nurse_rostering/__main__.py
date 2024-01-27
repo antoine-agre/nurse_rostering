@@ -2,7 +2,7 @@ from nurse_rostering.model.solution import Solution
 from nurse_rostering.io.export_solution import Solution2file
 from nurse_rostering.io.importer import Importer
 from nurse_rostering.solution.VND_Algo import VND
-from nurse_rostering.model.neighborhood import Neighborhood, TwoExchangeNeighborhood, BlockExchangeNeighborhood
+from nurse_rostering.model.neighborhood import *
 from nurse_rostering.model.problem import Problem
 from datetime import datetime
 from time import perf_counter
@@ -74,7 +74,11 @@ with open(f"{relative_path}log.csv", 'x') as log:
                 print(f"\tTemps de génération d'une solution initiale : {initial_time} s")
 
                 # VND   
-                neighborhoods: List[Neighborhood] = [TwoExchangeNeighborhood(problem), BlockExchangeNeighborhood(problem)]
+                neighborhoods: List[Neighborhood] = [
+                      TwoExchangeNeighborhood(problem),
+                        DoubleExchangeNeighborhood(problem),
+                      BlockExchangeNeighborhood(problem),
+                      ]
                 vnd: VND = VND(problem, neighborhoods)
 
                 start_time = perf_counter()
