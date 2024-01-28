@@ -72,12 +72,14 @@ with open(f"{relative_path}log.csv", 'x') as log:
                 initial_value: int = solution.value()
                 initial_time: float = end_time - start_time
                 print(f"\tTemps de génération d'une solution initiale : {initial_time} s")
+                print(f"Valeur de la solution initiale : {initial_value}")
 
                 # VND   
                 neighborhoods: List[Neighborhood] = [
                       TwoExchangeNeighborhood(problem),
-                        DoubleExchangeNeighborhood(problem),
+                      DoubleExchangeNeighborhood(problem),
                       BlockExchangeNeighborhood(problem),
+                      ThreeExchangeNeighborhood(problem)
                       ]
                 vnd: VND = VND(problem, neighborhoods)
 

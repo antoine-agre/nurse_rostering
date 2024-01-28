@@ -132,3 +132,59 @@ class BlockExchangeNeighborhood(Neighborhood):
                                 best_solution = neighbor
         
         return best_solution
+
+class ThreeExchangeNeighborhood(Neighborhood):
+    """This neighborhood includes all moves, where three 
+    shifts are exchanged between three different nurses 
+    on the same day."""
+
+    def __init__(self, problem: Problem) -> None:
+        super().__init__(problem)
+    
+    def best_neighbor(self, solution: Solution) -> Solution:
+        # Variables
+        best_solution: Solution = solution
+        best_value: int = solution.value()
+
+        # For all sets of 3 staff
+        for first_staff_int in range(len(self.problem.staff)):
+            for second_staff_int in range(first_staff_int + 1, len(self.problem.staff)):
+                for third_staff_int in range(second_staff_int + 1, len(self.problem.staff)):
+                
+                    # first_planning = solution.planning[first_staff_int]
+                    # second_planning = solution.planning[second_staff_int]
+
+                    # For all days
+                    for day in range(self.problem.days_count):
+
+                        for neighbor in self._get_neighbors((first_staff_int, second_staff_int, third_staff_int),
+                                                            day, solution):
+                            
+                            if neighbor.is_feasible():
+                                new_value = neighbor.value()
+                                if new_value < best_value:
+                                    best_value = new_value
+                                    best_solution = neighbor
+        
+        return best_solution
+
+    @staticmethod
+    def _get_neighbors(staff_ints: Tuple[int, int, int], day: int, solution: Solution):
+        
+        neighbor: Solution = solution.deep_copy()
+
+        # backward move
+        neighbor.planning[staff_ints[0]][day] = solution.planning[staff_ints[1]][day]
+        neighbor.planning[staff_ints[1]][day] = solution.planning[staff_ints[2]][day]
+        neighbor.planning[staff_ints[2]][day] = solution.planning[staff_ints[0]][day]
+
+        yield neighbor
+
+        neighbor = solution.deep_copy()
+
+        # forward move
+        neighbor.planning[staff_ints[0]][day] = solution.planning[staff_ints[2]][day]
+        neighbor.planning[staff_ints[1]][day] = solution.planning[staff_ints[0]][day]
+        neighbor.planning[staff_ints[2]][day] = solution.planning[staff_ints[1]][day]
+
+        yield neighbor
