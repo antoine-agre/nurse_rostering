@@ -88,27 +88,26 @@ class Solution:
 
         # Empirical bound, to experiment with
         max_tries = 100 * self.problem.days_count
-        # print("Génération d'un solution initiale :")
 
+        # Generates personnal schedule for every staff member
         for staff_int in range(len(self.problem.staff)):
             print(f"\r\t\t{staff_int+1}/{len(self.problem.staff)} staff", end="")
 
-
             schedule: PersonnalSchedule = deepcopy(self.planning[staff_int])
             staff: Staff = self.problem.staff[staff_int]
-            
+
+            # Iterate until the personnal schedule is feasible            
             while not is_personal_schedule_feasible(schedule, self.problem, staff_int):
+                # Reset the schedule
                 schedule = deepcopy(self.planning[staff_int])
 
                 schedule = set_days_off(self.problem, staff, schedule)
                 schedule = assign_work_days(staff, schedule)
-                # print(schedule)
                 
-                # Randomly assign shifts
+                # Randomly assign shifts for max_tries number of tries
                 available_shifts = staff.max_shift_days.copy()
-                # print(available_shifts)
-
                 loops = 0
+
                 while -1 in schedule:
                     day = randrange(len(schedule))
                     shift = randrange(len(available_shifts))
@@ -119,20 +118,15 @@ class Solution:
                     if loops > max_tries:
                         break
                 
-                # Reduce work days until worktime below maximum
-                # target_worktime = (staff.max_worktime - staff.min_worktime) / 2
-                # average_shift_duration = sum([shift_type.duration for shift_type in self.problem.shift_types]) / len(self.problem.shift_types)
-                # target_num_of_shifts = target_worktime / average_shift_duration
-                
                 def get_worktime(schedule): return sum([self.problem.shift_types[d].duration for d in schedule if d != None])
                 
+                # Randomly assign days off until worktime below maximum
+                # Useful for part-time employees
                 worktime = get_worktime(schedule)
                 while worktime > staff.max_worktime:
                     # schedule = _remove_smallest_work_block(schedule)
                     schedule[randrange(len(schedule))] = None
-                    # print(schedule)
                     worktime = get_worktime(schedule)
-                    # print("worktime :", worktime, ", max :", staff.max_worktime)
             
             self.planning[staff_int] = schedule
         
