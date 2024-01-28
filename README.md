@@ -5,6 +5,16 @@
 
 Le but de ce projet est d'étudier des approches métaheuristiques au problème NP-difficile de nurse rostering, d'en implémenter une, et de la confronter aux instances proposées par *Curtois et Qu (2014)*[^1].
 
+## Exécution
+
+Le package peut être exécuté de la façon suivante :
+
+```cmd
+py -m nurse_rostering
+```
+
+ce qui exécutera le point d'entrée `__main__.py` et lancera une batterie de tests.
+
 ## Solution
 
 Notre solution est basée sur l'article de *Rahimian et al. (2017)*[^2], qui décrit une métaheuristique hybride basée sur l'algorithme Variable Neighborhood Search (VNS) utilisant la programmation linéaire en nombre entiers (Integer Programming, IP) comme fonction de shaking.
@@ -17,9 +27,5 @@ Notre solution est basée sur l'article de *Rahimian et al. (2017)*[^2], qui dé
 
 ## Références
 
-[^1]: Tim Curtois et Rong Qu : **Computational results on new staff scheduling benchmark
-instances.** *ASAP Res. Group, School Comput. Sci., Univ. Nottingham, Nottingham, UK,
-Tech. Rep*, 2014
-[^2]: Erfan Rahimian, Kerem Akartunalı et John Levine : **A hybrid integer programming
-and variable neighbourhood search algorithm to solve nurse rostering problems.** *European
-Journal of Operational Research*, 258(2):411–423, 2017.
+[^1]: Curtois, T., Qu, R. (2014). *Computational results on new staff scheduling benchmark instances* (Technical Report). ASAP Research Group, School of Computer Science, University of Nottingham.
+[^2]: Rahimian, E., Akartunalı, K., Levine, J. (2017). A hybrid Integer Programming and Variable Neighbourhood Search algorithm to solve Nurse Rostering Problems. *European Journal of Operational Research*, 258 (2017), 411–423. https://doi.org/10.1016/j.ejor.2016.09.030
